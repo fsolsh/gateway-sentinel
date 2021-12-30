@@ -1,0 +1,41 @@
+server:
+  port: 9090
+
+dubbo:
+  registry:
+    address: nacos://127.0.0.1:8848
+    timeout: 10000
+  application:
+    name: gateway
+
+spring:
+  application:
+    name: gateway
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+    gateway:
+      routes: # 路由可以有多个
+        - id: service-feign-router
+          uri: lb://feign-server
+          predicates: # 路由条件
+            - Path=/feign/**
+    sentinel:
+      scg:
+        fallback: # 限流-服务降级返回的响应结果
+          mode: response
+          response-status: 429
+          response-body: Too Many Requests
+      transport: # sentinel控制台相关的配置
+        port: 8899
+        dashboard: localhost:8888
+      eager: true
+
+auth:
+  config:
+    enable: true # 开启token校验，通过dubbo rpc call auth service
+    ignore-url: # 无需验证token的url
+      - /user/login
+
+
